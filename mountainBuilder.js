@@ -68,7 +68,7 @@ function generateRandomMountainData(xAxis,yAxis,maximumHeight) {
 document.addEventListener("keydown",function(e){
     if(e.keyCode===40) {
         // Down arrow key:
-        generateRandomMountainData(prompt("Landscape xAxis length",10),prompt("Landscape yAxis length",10),prompt("Maximum tile value(a.k.a height)",100));
+        generateRandomMountainData(prompt("Landscape xAxis length",190),prompt("Landscape yAxis length",90),prompt("Maximum tile value(a.k.a height)",100));
         buildMountain();
     }
     if(e.keyCode===66) {

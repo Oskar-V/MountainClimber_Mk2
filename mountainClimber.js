@@ -4,6 +4,7 @@ var climberCurrentHeight = [],
     climberPos = [[0,0]],
     toggleEnter = 0,
     interval = [],
+    positionAlreadyVisited = [],
     localMaximums = [],
     globalMaximum,
     /* Creates a class for tiles that the climber is currently on: */
@@ -18,7 +19,8 @@ document.addEventListener("keydown",function(e){
         // Enter key:
         if(toggleEnter==0){
             e.preventDefault();
-            interval[0] = setInterval(function(){climb(0)},250);
+            justFuckingShotgunIt(250, 1);
+            //interval[0] = setInterval(function(){climb(0)},250);
             toggleEnter++;
         } else {
             console.log("Climbing stopped");
@@ -32,7 +34,14 @@ document.addEventListener("keydown",function(e){
     } else if(e.keyCode===9) {
         // Tab key:
         e.preventDefault();
-        justFuckingShotgunIt(prompt("What would you like the time between steps to be?",250),Number(prompt("How many climbing bots would you like to create?",10)));
+        justFuckingShotgunIt(prompt("What would you like the time between steps to be?",100),Number(prompt("How many climbing bots would you like to create?",10)));
+    } else if(e.keyCode===75) {
+        // K key:
+        // Forceably kills all the climbers
+        for(i=0;i<interval.length;i++) {
+            clearInterval(interval[i]);
+        }
+        console.log("Killed all climbers!");
     }
 });
 
@@ -58,7 +67,9 @@ function climb(climber) {
         document.getElementById(climberPos[climber][0]+":"+climberPos[climber][1]).classList.add("climberOnTile");
     }
     climberCurrentHeight[climber] = Number(document.getElementById(climberPos[climber][0]+":"+climberPos[climber][1]).innerHTML);
+    /* Calls functions needed to decide where to go and then goes in the resulted direction */
     var direction = chooseDirection(detectSurroundings(climber),climber);
+    positionAlreadyVisited[climber][climberPos[climber][1]][climberPos[climber][0]] = 1;
     if(direction==0) {
         move(1,-1,climber);
     } else if(direction==1) {
@@ -104,7 +115,8 @@ function chooseDirection(choices, climber) {
     var movementDirection;
         highestNeighbour = climberCurrentHeight[climber];
     for(i=0;i<choices.length;i++){
-        if(Number(choices[i])>=Number(highestNeighbour)) {
+        /* Change this between > and >= */
+        if(Number(choices[i])>=Number(highestNeighbour)&&positionAlreadyVisited[climber][climberPos[climber][1]][climberPos[climber][0]]!=1) {
             highestNeighbour = choices[i];
             movementDirection = choices[i];
         }
@@ -143,9 +155,22 @@ function justFuckingShotgunIt(stepspeed, climbersCreated) {
         clearClimberPosition(i);
         clearInterval(interval[i]);
     }
-    /* The only function that is needed from the mountainBuilder.js file in order to determen the xAxis length from which climberPos[climber][0] can be chosen from */
+    /* The only function that is needed from the mountainBuilder.js file in order to determen the xAxis length from which climberPos[climber][0] can be chosen from*/
+    // PS: no-longer the only var/function needed from mountainBuilder.js
     var fixer = findLongestRowLength();
     climberPos = [];
+    /* Takes the mountainDataArray as landscape and sets all nodes as not visited (requires mountainDataArray to exist)*/
+    /* Triple nested for-loops are fun-fun-fun!!! */
+    positionAlreadyVisited = [];
+    for(k=0;k<climbersCreated;k++) {
+        positionAlreadyVisited[k] = [];
+        for(i=0;i<mountainDataArray.length;i++) {
+            positionAlreadyVisited[k][i] = [];
+            for(j=0;j<mountainDataArray[i].length;j++) {
+                positionAlreadyVisited[k][i][j] = 0;
+            }
+        }
+    }
     for(i=0;i<climbersCreated;i++) {
         const fixerVar2 = i;
         climberPos[i] = [Math.floor(Math.random()*fixer),Math.floor(Math.random()*mountainDataArray.length)];
@@ -166,9 +191,13 @@ function findGlobalMax(localMaximums) {
     return globalMaximum;
 }
 
+/* Need to get this functionality working sooner or later */
 document.getElementsByTagName('body')[0].addEventListener("change",function() {
+    console.log("Detected a new mountain!");
     for(i=0;i<climberPos.length;i++) {
         clearClimberPosition(i);
         clearInterval(interval[i]);
     }
+    localMaximums = [];
+    globalMaximum = 0;
 });
